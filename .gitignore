@@ -1,0 +1,6 @@
+/archive/
+/_pycache_/
+/build/
+/dist/
+/env_ssl/
+cbo_cert_list.xlsx
