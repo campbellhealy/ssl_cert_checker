@@ -1,3 +1,4 @@
+.gitignore
 /__pycache__/
 /archive/
 /build/
@@ -5,3 +6,5 @@
 /env_ssl/
 cbo_cert_list.xlsx
 host_list.txt
+node_four_database.sql
+visa_database.sql
