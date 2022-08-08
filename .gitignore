@@ -1,5 +1,5 @@
 /archive/
-/_pycache_/
+/__pycache__/
 /build/
 /dist/
 /env_ssl/
