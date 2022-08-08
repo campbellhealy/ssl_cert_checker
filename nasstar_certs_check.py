@@ -1,6 +1,8 @@
 '''
     Check a list of the Nasstar SSL Certificates
 '''
+
+import schedule
 import idna   
 import pandas as pd
 
@@ -8,8 +10,9 @@ from OpenSSL import SSL
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from datetime import datetime
-from socket import socket
 from os import system               # My pool cleaner
+from socket import socket
+from time import sleep
 
 from hosts import get_hosts_nasstar
 
@@ -109,5 +112,8 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
-    main_function()
-
+    # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
+    schedule.every().day.at("09:15").do(main_function)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

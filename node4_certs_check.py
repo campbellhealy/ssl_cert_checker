@@ -2,6 +2,7 @@
     Check a list of the Node 4 SSL Certificates
 '''
 
+import schedule
 import idna   
 import pandas as pd
 import sqlite3
@@ -13,6 +14,7 @@ from OpenSSL import SSL
 from os import system               # My pool cleaner
 from socket import socket
 from sqlalchemy import create_engine #, text, insert, sql
+from time import sleep
 
 from hosts import get_hosts_node_four
 
@@ -148,5 +150,10 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
-    main_function()
+    # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
+    schedule.every().day.at("09:00").do(main_function)
+    while True:
+        schedule.run_pending()
+        sleep(1)
+
 
