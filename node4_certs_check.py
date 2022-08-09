@@ -63,6 +63,7 @@ def main_function():
     df = df.reset_index(drop=True) # Helps the eye see the specific hostname
     write_to_sql(df) 
     print('Task Complete')
+    exit()
 
 
 
@@ -83,11 +84,11 @@ def write_to_sql(df):
     df.to_sql('ssl_certs', conn, if_exists='replace', index = False)
 
     # Print to console checker
-    c.execute('''  
-    SELECT * FROM ssl_certs
-            ''')
-    for row in c.fetchall():
-        print (row)
+    # c.execute('''  
+    # SELECT * FROM ssl_certs
+    #         ''')
+    # for row in c.fetchall():
+    #     print (row)
     return  # Back to main function to console that the task was completed
 
 
@@ -151,7 +152,7 @@ def get_issuer(cert):
 
 if __name__ == '__main__':
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("11:45").do(main_function)
+    schedule.every().day.at("08:45").do(main_function)
     while True:
         schedule.run_pending()
         sleep(1)
