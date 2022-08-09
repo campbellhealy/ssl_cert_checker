@@ -172,7 +172,7 @@ def get_issuer(cert):
 
 if __name__ == '__main__':
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:45").do(main_function)
+    schedule.every().day.at("11:37").do(main_function)
     while True:
         schedule.run_pending()
         sleep(1)
