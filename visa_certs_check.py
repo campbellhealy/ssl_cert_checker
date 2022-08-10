@@ -9,7 +9,7 @@
 import schedule
 import idna   
 import pandas as pd
-import sqlite3
+import pymysql
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -17,7 +17,7 @@ from datetime import datetime
 from OpenSSL import SSL
 from os import system               # My pool cleaner
 from socket import socket
-from sqlalchemy import create_engine #, text, insert, sql
+from sqlalchemy import create_engine, text, insert, sql
 from time import sleep
 
 from hosts import get_hosts
@@ -32,6 +32,7 @@ def main_function():
     today = datetime.now() # Used as a point of reference 
     df = pd.DataFrame()
     HOSTS = get_hosts() # gets the list of certificate url with port
+    # HOSTS = [('rsp.swa.seft.ecebs.com', 443),('rsp.swa.seft.ecebs.com', 443) ]
     count = len(HOSTS) # This identifies how many certificates are being checked
     try:
         for item, ppp in HOSTS:
@@ -81,36 +82,36 @@ def main_function():
     # Main dataframe cleansing
     df = df.sort_values(by=['Expires Not After'], ascending=True)
     df = df.reset_index(drop=True) # Tidies up the index numbering
-    write_to_sql(df) 
+    # write_to_sql(df) 
+    write_to_mysql(df) 
     print('Task Complete')
     exit()
 
 
+def write_to_mysql(df):
+    hostname= '127.0.0.1'
+    dbname  = 'ssl_checker'
+    uname   = 'root'
+    pwd     = '1234qwe'
+    tableName = 'visa_ssl'
+    table_drop = text('DROP TABLE IF EXISTS visa_ssl;')
 
-def write_to_sql(df):
-    '''
-        Changing the DataFrame into a database.
-        This is a new feature to me and I went with the sqlite db as
-        I knew what I was doing with that. any db could be used and 
-        once understood, I would only need to change this one function
-    '''
-    engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
-    df.to_sql('ssl_cert', con = engine)
+    try:
+        # Create SQLAlchemy engine to connect to MySQL Database
+        engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
+                        .format(host=hostname, db=dbname, user=uname, pw=pwd))
+        # Use this to delete the table
+        engine.execute(table_drop)
+        # Convert dataframe to sql table                                   
+        df.to_sql(tableName, engine, index=False)
 
-    conn = sqlite3.connect('visa_database.sql')
-    c = conn.cursor()
-    conn.commit()
-    # db Updating
-    df.to_sql('ssl_certs', conn, if_exists='replace', index = False)
-
-    # Print to console checker
-    # c.execute('''  
-    # SELECT * FROM ssl_certs
-    #         ''')
-    # for row in c.fetchall():
-    #     print (row)
-    return  # Back to main function to console that the task was completed
-
+    except ValueError:
+        print(ValueError)
+    except Exception:   
+        print(Exception)
+    else:
+        print("Table %s created successfully."%tableName)   
+    return
 
 def get_certificate(hostname, port):
     '''
@@ -171,8 +172,9 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
+    # main_function()
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:45").do(main_function)
+    schedule.every().day.at("08:50").do(main_function)
     while True:
         schedule.run_pending()
         sleep(1)
