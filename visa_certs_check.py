@@ -1,6 +1,7 @@
+# visa_certs_check.py
 '''
     Check a list of the Visa SSL Certificates
-    Convert file to database
+    Add file to the local MySQL database
 
     Dependancies:
                     hosts.py  < Locate in the same root folder
@@ -17,7 +18,7 @@ from datetime import datetime
 from OpenSSL import SSL
 from os import system               # My pool cleaner
 from socket import socket
-from sqlalchemy import create_engine, text, insert, sql
+from sqlalchemy import create_engine, text
 from time import sleep
 
 from hosts import get_hosts
@@ -84,8 +85,7 @@ def main_function():
     df = df.reset_index(drop=True) # Tidies up the index numbering
     # write_to_sql(df) 
     write_to_mysql(df) 
-    print('Task Complete')
-    exit()
+    print('Visa Task Complete')
 
 
 def write_to_mysql(df):
@@ -172,9 +172,8 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
-    # main_function()
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:50").do(main_function)
+    schedule.every().day.at("08:55").do(main_function) # Set this time prior to Node 4
     while True:
         schedule.run_pending()
         sleep(1)

@@ -1,5 +1,10 @@
+# node4_certs_check.py
 '''
     Check a list of the Node 4 SSL Certificates
+    Add file to the local MySQL database
+
+    Dependancies:
+                    hosts.py  < Locate in the same root folder
 '''
 
 import schedule
@@ -62,8 +67,7 @@ def main_function():
     df = df.sort_values(by=['Expires Not After'], ascending=True)
     df = df.reset_index(drop=True) # Helps the eye see the specific hostname
     write_to_mysql(df) 
-    print('Task Complete')
-    # exit()
+    print('Node4 Task Complete')
 
 
 def write_to_mysql(df):
@@ -150,9 +154,8 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
-    # main_function()
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:45").do(main_function)
+    schedule.every().day.at("08:59").do(main_function) # Set this time after Visa
     while True:
         schedule.run_pending()
         sleep(1)
