@@ -21,6 +21,7 @@ from socket import socket
 from sqlalchemy import create_engine, text
 from time import sleep
 
+from auth import hostname, dbname,uname, pwd
 from hosts import get_hosts_node_four
 
 
@@ -32,12 +33,13 @@ def main_function():
     count = len(HOSTS)
     try:
         for item, ppp in HOSTS:
+            print(item)
+            print(count)
             host = item
             port = ppp
             cert = get_certificate(host, port)
 
             commonname = get_commonname(cert)
-            SAN = get_altname(cert)
             issuer= get_issuer(cert)
             notbefore= cert.not_valid_before
             notafter= cert.not_valid_after
@@ -55,10 +57,8 @@ def main_function():
             elif (notafter - today).days < 365:
                    checker = 'Less than a Year'
 
-            df_data = {'Common Name': [commonname],'SAN': [SAN],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': [checker]}
+            df_data = {'Common Name': [commonname],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': [checker]}
             df2 = pd.DataFrame(data = df_data)
-            print(commonname)
-            print(count)
             count -=1
             df = pd.concat([df,df2], ignore_index=True)
     except SSL.Error:
@@ -66,18 +66,14 @@ def main_function():
     
     df = df.sort_values(by=['Expires Not After'], ascending=True)
     df = df.reset_index(drop=True) # Helps the eye see the specific hostname
-    write_to_mysql(df) 
+    write_to_mysql(df, hostname, dbname,uname, pwd) 
     print('Node4 Task Complete')
+    return
 
 
-def write_to_mysql(df):
-    hostname= '127.0.0.1'
-    dbname  = 'ssl_checker'
-    uname   = 'root'
-    pwd     = '1234qwe'
+def write_to_mysql(df, hostname, dbname,uname, pwd):
     tableName = 'node_four_ssl'
-    table_drop = text('DROP TABLE IF EXISTS node_four_ssl;')
-
+    table_drop = text(f'DROP TABLE IF EXISTS {tableName};')
     try:
         # Create SQLAlchemy engine to connect to MySQL Database
         engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
@@ -86,12 +82,7 @@ def write_to_mysql(df):
         engine.execute(table_drop)
         # Convert dataframe to sql table                                   
         df.to_sql(tableName, engine, index=False)
-
-    except ValueError:
-        print(ValueError)
-    except Exception:   
-        print(Exception)
-    else:
+    finally:
         print("Table %s created successfully."%tableName)   
     return
 
@@ -154,8 +145,9 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
-    # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:59").do(main_function) # Set this time after Visa
-    while True:
-        schedule.run_pending()
-        sleep(1)
+    main_function()
+    # # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
+    # schedule.every().day.at("12:20").do(main_function) # Set this time after Visa
+    # while True:
+    #     schedule.run_pending()
+    #     sleep(1)

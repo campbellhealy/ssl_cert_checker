@@ -18,6 +18,8 @@
 import pandas as pd
 
 
+cbo_certs = 'cbo_cert_list.xlsx' # Cleaning up the original data
+
 def get_hosts():
     '''
         This is for the Visa List.
@@ -26,7 +28,7 @@ def get_hosts():
     '''
     hosts_list = []
     # df = pd.read_excel('cbo_cert_list_MASTER.xlsx', sheet_name='Visa HOPS Certificates 2022') # Add sheet_name= to get the specific sheet
-    df = pd.read_excel('cbo_cert_list.xlsx', sheet_name='Visa HOPS Certificates 2022') # Add sheet_name= to get the specific sheet
+    df = pd.read_excel(cbo_certs, sheet_name='Visa HOPS Certificates 2022') # Add sheet_name= to get the specific sheet
     df_list = df['Certificate Name'].tolist()
     port = 443
 
@@ -52,7 +54,7 @@ def get_hosts_nasstar():
     '''
     hosts_list = []
     # df = pd.read_excel('cbo_cert_list.xlsx') # Add sheet_name= to get the specific sheet
-    df = pd.read_excel('cbo_cert_list.xlsx', sheet_name='Nasstar TMS Certificates 2022')
+    df = pd.read_excel(cbo_certs, sheet_name='Nasstar TMS Certificates 2022')
     df_list = df['Certificate Name'].tolist()
     port = 443
 
@@ -62,7 +64,6 @@ def get_hosts_nasstar():
             Using code to perform this means it is only a list of url that needs stored.
             Also the port number can be changed on mass if, EVER, needed. < I doubt it!
         '''
-        x = x[:-4]
         temp_list = [x, port]
         tuple_item = tuple(temp_list)
         hosts_list.append(tuple_item)
@@ -79,7 +80,7 @@ def get_hosts_node_four():
         the certificate.
     '''
     hosts_list = []
-    df = pd.read_excel('cbo_cert_list.xlsx', sheet_name='Node4 Certificates 2022')
+    df = pd.read_excel(cbo_certs, sheet_name='Node4 Certificates 2022')
     # df = pd.read_excel('cbo_cert_list.xlsx') # Add sheet_name= to get the specific sheet
     df_list = df['Certificate Name'].tolist()
     port = 443
@@ -90,7 +91,7 @@ def get_hosts_node_four():
             Using code to perform this means it is only a list of url that needs stored.
             Also the port number can be changed on mass if, EVER, needed. < I doubt it!
         '''
-        x = x[:-4]
+        # x = x[:-4]  # This was what was used to remove the .crt in original spreadsheet
         temp_list = [x, port]
         tuple_item = tuple(temp_list)
         hosts_list.append(tuple_item)

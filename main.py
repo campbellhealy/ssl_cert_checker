@@ -8,12 +8,11 @@ from os import system
 
 def main_controller():
     system('cls')
+    print('Preparing for the next scheduled run.')
+    # Visa list must be first
     system('python visa_certs_check.py') # Visa list
-    print('Task 1 Complete')
     system('python node4_certs_check.py') # Node 4 list
-    print('Task 2 Complete')
-    # system('python nasstar_certs_check.py') # Nasstar list
-    # print('Task 3 Complete')
+    system('python nasstar_certs_check.py') # Nasstar list
     main_controller()
 
 

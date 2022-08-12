@@ -2,7 +2,6 @@
 '''
     Check a list of the Visa SSL Certificates
     Add file to the local MySQL database
-
     Dependancies:
                     hosts.py  < Locate in the same root folder
 '''
@@ -21,6 +20,7 @@ from socket import socket
 from sqlalchemy import create_engine, text
 from time import sleep
 
+from auth import hostname, dbname, uname, pwd
 from hosts import get_hosts
 
 
@@ -42,7 +42,6 @@ def main_function():
             cert = get_certificate(host, port)
 
             commonname = get_commonname(cert)
-            SAN = get_altname(cert)
             issuer= get_issuer(cert)
             notbefore= cert.not_valid_before
             notafter= cert.not_valid_after
@@ -60,7 +59,7 @@ def main_function():
                    checker = 'Less than a Year'
 
             # Gets the information from each certificate check
-            df_data = {'Common Name': [commonname],'SAN': [SAN],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': [checker]}
+            df_data = {'Common Name': [commonname],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': [checker]}
             df2 = pd.DataFrame(data = df_data)
             # Console information, (Which certificate is being checked and how many checks are left for the code)
             print(commonname)
@@ -75,7 +74,7 @@ def main_function():
             To keep the checks going, and highlight any faults to go back and look at manually
         '''
         print("OpenSSL.SSL.Error: [('SSL routines', '', 'unexpected eof while reading')]")
-        df_data = {'Common Name': [commonname],'SAN': [SAN],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': ['CONNECTION ERROR']}
+        df_data = {'Common Name': [commonname],'Issuer': [issuer],'Expires Not Before': [notbefore],'Expires Not After': [notafter], 'Date Check': ['CONNECTION ERROR']}
         print(count)
         count -=1
         df = pd.concat([df,df2], ignore_index=True)
@@ -83,18 +82,13 @@ def main_function():
     # Main dataframe cleansing
     df = df.sort_values(by=['Expires Not After'], ascending=True)
     df = df.reset_index(drop=True) # Tidies up the index numbering
-    # write_to_sql(df) 
-    write_to_mysql(df) 
+    write_to_mysql(df, hostname, dbname,uname, pwd)
     print('Visa Task Complete')
+    exit()  # The other modules have return, this being the first has this
 
-
-def write_to_mysql(df):
-    hostname= '127.0.0.1'
-    dbname  = 'ssl_checker'
-    uname   = 'root'
-    pwd     = '1234qwe'
+def write_to_mysql(df, hostname, dbname,uname, pwd):
     tableName = 'visa_ssl'
-    table_drop = text('DROP TABLE IF EXISTS visa_ssl;')
+    table_drop = text(f'DROP TABLE IF EXISTS {tableName};')
 
     try:
         # Create SQLAlchemy engine to connect to MySQL Database
@@ -102,6 +96,7 @@ def write_to_mysql(df):
                         .format(host=hostname, db=dbname, user=uname, pw=pwd))
         # Use this to delete the table
         engine.execute(table_drop)
+        # exit()
         # Convert dataframe to sql table                                   
         df.to_sql(tableName, engine, index=False)
 
@@ -172,9 +167,10 @@ def get_issuer(cert):
 
 
 if __name__ == '__main__':
+    # main_function()
     # Documentation for schedule - https://schedule.readthedocs.io/en/stable/
-    schedule.every().day.at("08:55").do(main_function) # Set this time prior to Node 4
+    schedule.every().day.at("08:45").do(main_function)
+    # schedule.every().day.at("14:36").do(main_function)
     while True:
         schedule.run_pending()
         sleep(1)
-
